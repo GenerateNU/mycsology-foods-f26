@@ -1,1 +1,10 @@
 build/
+.venv/
+venv/
+.west/
+.vscode/
+bootloader/
+doc/
+modules/
+tools/
+zephyr/
