@@ -7,7 +7,7 @@ int buzzer_play_tune(const struct device *dev, uint32_t* tune) {
     }
 
     for (int i = 0; i < sizeof(tune); i++) {
-        uint8_t ret = buzzer_pwm_tone(dev, tune[i], NOTE_DURATION_MS);
+        uint8_t ret = buzzer_tone(dev, tune[i], NOTE_DURATION_MS);
         if (ret) {
             return ret;
         }

@@ -18,12 +18,12 @@ uint8_t display_seven_seg(const struct device *dev, char* chars) {
         uint8_t seg = siekoo_from_char(chars[i]);
         for (int j = 0; j < 8; j++) {
             if (seg & (1 << j)) {
-                uint8_t ret = ht16k33_led_on(dev, digit_offset[i] + j);
+                uint8_t ret = led_on(dev, digit_offset[i] + j);
                 if (ret) {
                     return ret;
                 }
             } else {
-                uint8_t ret = ht16k33_led_off(dev, digit_offset[i] + j);
+                uint8_t ret = led_off(dev, digit_offset[i] + j);
                 if (ret) {
                     return ret;
                 }

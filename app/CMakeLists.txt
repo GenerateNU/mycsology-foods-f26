@@ -11,9 +11,13 @@ project(mycology_foods)
 target_sources(app PRIVATE 
     src/main.c
     src/UI/seven_seg.c
+    src/UI/buzzer.c
     )
 
-target_include_directories(app PRIVATE inc)
+target_include_directories(app PRIVATE 
+    inc
+    inc/UI
+    )
 
 
 #[[
