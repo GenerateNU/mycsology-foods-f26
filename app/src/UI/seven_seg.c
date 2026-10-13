@@ -13,6 +13,9 @@ uint8_t display_seven_seg(const struct device *dev, char* chars) {
         LOG_ERR("Seven_seg: device not ready.");
         return 1;
     }
+    for (int i = 0; i < 128; i++) {
+        led_off(dev, i);
+    }
     uint8_t len = (sizeof(chars) > 4) ? 4 : sizeof(chars);
     for (int i = 0; i < len; i++) {
         uint8_t seg = siekoo_from_char(chars[i]);
