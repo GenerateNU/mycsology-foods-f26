@@ -3,6 +3,7 @@
 
 #include "seven_seg.h"
 #include "buzzer.h"
+#include "buttons.h"
 
 static const struct device *seven_seg_dev = DEVICE_DT_GET(DT_NODELABEL(ht16k33));
 static const struct device *buzzer_dev = DEVICE_DT_GET(DT_NODELABEL(buzzer));
@@ -18,6 +19,11 @@ int main(void)
     buzzer_play_tune(buzzer_dev, done_tune, 4);
     // Should play done tune.
 
+    init_all_buttons();
+
+    while (1) {
+        k_sleep(K_FOREVER);
+    }
     
     return 0;
 }
