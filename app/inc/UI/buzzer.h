@@ -5,28 +5,12 @@
 #include <stdint.h>
 #include <zephyr/logging/log.h>
 
-LOG_MODULE_REGISTER(buzzer);
-
 #define NOTE_DURATION_MS 1000
 
-static const uint32_t confirm_tune[2] = {
-    880,
-    1318,
-};
+extern const uint32_t confirm_tune[2];
+extern const uint32_t done_tune[4];
+extern const uint32_t error_tune[3];
 
-static const uint32_t done_tune[4] = {
-    880,
-    1318,
-    880,
-    1760,
-};
-
-static const uint32_t error_tune[4] = {
-    880,
-    880,
-    880,
-};
-
-int buzzer_play_tune(const struct device *dev, uint32_t* tune);
+int buzzer_play_tune(const struct device *dev, const uint32_t* tune, size_t size);
 
 #endif // BUZZER_H

@@ -1,46 +1,23 @@
-// #include <stdio.h>
 #include <zephyr/kernel.h>
-// zephyr/device.h is included eventually through kernel.h
 #include <zephyr/drivers/gpio.h>
 
-// This is accessing the DeviceTree node through its label (can see the entire devicetree in generated zephyr.dts file in the build directory)
-#define LED2 DT_ALIAS(led0)
+#include "seven_seg.h"
+#include "buzzer.h"
 
-// 'gpios' refers to the property name within the led0 node, which is itself inside the leds parent node in the devicetree
-// you can see this^^ in code if you search for the 'zephyr/boards/nordic/nrf54l15dk/nrf54l15dk_common.dtsi' file
-static const struct gpio_dt_spec led_2 = GPIO_DT_SPEC_GET(LED2, gpios);
+static const struct device *seven_seg_dev = DEVICE_DT_GET(DT_NODELABEL(ht16k33));
+static const struct device *buzzer_dev = DEVICE_DT_GET(DT_NODELABEL(buzzer));
 
 int main(void)
 {
-    // led_0.port is used because you need to check if the gpio controller itself is ready to be used, if you just do led_0.pin you will get a number like '9'
-    if (!device_is_ready(led_2.port))
-    {
-        return 0;
-    }
+    clear_seven_seg(seven_seg_dev);
+    char test[] = {'b','e','l','o'};
+    display_seven_seg(seven_seg_dev, test, 4);
+    display_seven_seg_punctuation(seven_seg_dev, 0b00001);
+    // Should display: belo.
 
-    int state = 0;
+    buzzer_play_tune(buzzer_dev, done_tune, 4);
+    // Should play done tune.
 
-    int ret;
-    // configuration of led_0 pin
-    ret = gpio_pin_configure_dt(&led_2, GPIO_OUTPUT);
-
-    if (ret != 0)
-    {
-        return 0;
-    }
-
-    while (true)
-    {
-        state = !state;
-        ret = gpio_pin_set_dt(&led_2, state);
-        if (ret != 0)
-        {
-            return 0;
-        }
-        printk("LED is now in state: %d", state);
-
-        k_msleep(4000);
-    }
-
+    
     return 0;
 }

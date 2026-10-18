@@ -5,8 +5,6 @@
 #include <stdint.h>
 #include <zephyr/logging/log.h>
 
-LOG_MODULE_REGISTER(seven_seg);
-
 static const uint8_t siekoo_seg[36] = {
     /* digits */
     0x3F,  /* 0  abcdef  */
@@ -56,6 +54,9 @@ static const uint8_t digit_offset[4] = { //Which of the 4 digits to put the numb
     64,
 };
 
-uint8_t display_seven_seg(const struct device *dev, char* chars);
+int display_seven_seg(const struct device *dev, char* chars, size_t size);
+int display_seven_seg_punctuation(const struct device *dev, uint8_t punc_index);
+int clear_seven_seg(const struct device *dev);
+
 
 #endif // SEVEN_SEG_H
