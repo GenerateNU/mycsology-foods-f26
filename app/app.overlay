@@ -4,11 +4,41 @@
         /* TIM1 CH1 on PE9 (Arduino D6). Period is only a default; the driver changes it per tone. */
         pwms = <&pwm1 1 PWM_HZ(2700) PWM_POLARITY_NORMAL>;
     };
+
+    buttons {
+        compatible = "gpio-keys";
+        button_0: button_0 {
+            gpios = <&gpioc 8 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; // ui button
+        };
+        button_1: button_1 {
+            gpios = <&gpioe 11 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; // start button
+        };
+        button_2: button_2 {
+            gpios = <&gpioe 12 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; // mix button
+        };
+    };
+    aliases {
+        b0 = &button_0;
+        b1 = &button_1;
+        b2 = &button_2;
+        led2 = &ext_led;
+    };
+};
+
+&leds {
+    ext_led: led_2 {
+        gpios = <&gpiod 14 GPIO_ACTIVE_HIGH>; // PD14 (Arduino D10)
+    };
+};
+
+/* PD14 is SPI1's chip select by default on this board; SPI isn't used, so free the pin for the LED. */
+&spi1 {
+    status = "disabled";
 };
 
 &timers1 {
     /* Board default timers use a 10000 prescaler (~24 kHz tick), which is too coarse for audio tones.
-     * A ~2.4 MHz tick gives good pitch resolution and still fits tones down to ~40 Hz in 16 bits. */
+    * A ~2.4 MHz tick gives good pitch resolution and still fits tones down to ~40 Hz in 16 bits. */
     st,prescaler = <99>;
     status = "okay";
 
