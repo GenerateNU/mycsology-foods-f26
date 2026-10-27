@@ -34,7 +34,7 @@ struct sht30_sample {
 	int16_t temp_c_x100;
 	uint16_t rh_x100;
 };
-
+int init_sht30();
 /**
  * Take one measurement from the SHT30.
  *

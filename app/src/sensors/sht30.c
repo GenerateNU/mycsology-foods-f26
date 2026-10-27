@@ -32,15 +32,14 @@ static uint8_t sht30_crc8(const uint8_t *data, size_t len)
 	}
 	return crc;
 }
-int sht30_read(const struct i2c_dt_spec *i2c,
-	       enum sht30_repeatability rep,
-	       struct sht30_sample *out)
-{
-	/* Step 0: basic sanity checks on the arguments the caller passed in.
+
+int init_sht30(){
+
+/* Step 0: basic sanity checks on the arguments the caller passed in.
 	 * If someone calls us with a NULL pointer, fail early with a clear
 	 * error instead of crashing later.
 	 */
-	if (i2c == NULL || out == NULL) {
+	 if (i2c == NULL || out == NULL) {
 		return -EINVAL; /* "invalid argument" — standard C errno */
 	}
 	/*
@@ -51,6 +50,14 @@ int sht30_read(const struct i2c_dt_spec *i2c,
 		LOG_ERR("I2C bus not ready");
 		return -ENODEV;
 	}
+	return 0;
+}
+
+int sht30_read(const struct i2c_dt_spec *i2c,
+	       enum sht30_repeatability rep,
+	       struct sht30_sample *out)
+{
+	
 
 	/*
 	* this selects the actual repeatability option using the 2 bits
