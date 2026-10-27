@@ -13,6 +13,7 @@ target_sources(app PRIVATE
     src/UI/seven_seg.c
     src/UI/buzzer.c
     src/UI/buttons.c
+    src/sensors/sht30.c
     )
 
 target_include_directories(app PRIVATE 
