@@ -9,6 +9,7 @@
 
 LOG_MODULE_REGISTER(dial);
 
+// Aliases
 #define TIMER_NODE DT_NODELABEL(timers3)
 #define QDEC_NODE  DT_NODELABEL(qdec)
 
@@ -17,16 +18,21 @@ static TIM_TypeDef *const tim = (TIM_TypeDef *)DT_REG_ADDR(TIMER_NODE);
 static int32_t qdec_position(void);
 void dial_thread_entry(void *p1, void *p2, void *p3);
 
-
-static volatile int32_t wraps;          /* overflow/underflow count */
+static int32_t dial_value_diff;
+static volatile int32_t wraps;
 static K_SEM_DEFINE(edge_sem, 0, 1);
 K_THREAD_DEFINE(dial_thread, 1024, dial_thread_entry, NULL, NULL, NULL, 7, 0, SYS_FOREVER_MS);
 
 
 void dial_thread_entry(void *p1, void *p2, void *p3) {
+    int32_t last_dial_value = 0;
+    int32_t dial_value;
     while (1) {
         k_sem_take(&edge_sem, K_FOREVER);
-        LOG_INF("pos = %d", qdec_position());
+        dial_value = qdec_position();
+        dial_value_diff = dial_value - last_dial_value;
+        LOG_INF("pos = %d", dial_value);
+        last_dial_value = dial_value;
     }
 }
 
@@ -65,7 +71,7 @@ static int32_t qdec_position(void)
     return w * (int32_t)(LL_TIM_GetAutoReload(tim) + 1) + (int32_t)cnt;
 }
 
-int init_dial() {
+const int *init_dial() {
     const struct device *qdec = DEVICE_DT_GET(QDEC_NODE);
 
     if (!device_is_ready(qdec)) {
@@ -89,5 +95,5 @@ int init_dial() {
     irq_enable(DT_IRQ_BY_NAME(TIMER_NODE, global, irq));
 
     k_thread_start(dial_thread);
-    return 0;
+    return &dial_value_diff;
 }
