@@ -88,4 +88,5 @@ int clear_seven_seg(const struct device *dev) {
     for (int i = 0; i < 128; i++) {
         led_off(dev, i);
     }
+    return 0;
 }
