@@ -7,4 +7,10 @@ manifest:
     - name: zephyr
       remote: zephyrproject-rtos
       revision: v4.3.0
+      # Pull Zephyr's own west.yml so HALs (hal_nordic, cmsis, …) get cloned.
+      # Without this you only get the zephyr/ folder and can't build for nRF54.
+      import: true
+      # NOTE: do not add `self: path: .` here. That registers this whole repo as a
+      # Zephyr module; because it contains the cloned zephyr/ tree, Kconfig
+      # recurses and the build dies.
 

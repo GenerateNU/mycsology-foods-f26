@@ -14,6 +14,7 @@ target_sources(app PRIVATE
     src/UI/buzzer.c
     src/UI/buttons.c
     src/UI/dial.c
+    src/sensors/sht30.c
     )
 
 target_include_directories(app PRIVATE 
