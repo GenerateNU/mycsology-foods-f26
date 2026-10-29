@@ -1,20 +1,20 @@
 / {
     buzzer: buzzer {
         compatible = "pwm-buzzer";
-        /* TIM1 CH1 on PE9 (Arduino D6). Period is only a default; the driver changes it per tone. */
-        pwms = <&pwm1 1 PWM_HZ(2700) PWM_POLARITY_NORMAL>;
+        /* TIM8 CH1 on PC6 (Feather D6). Period is only a default; the driver changes it per tone. */
+        pwms = <&pwm8 1 PWM_HZ(2700) PWM_POLARITY_NORMAL>;
     };
 
     buttons {
         compatible = "gpio-keys";
         button_0: button_0 {
-            gpios = <&gpioc 8 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; // ui button
+            gpios = <&gpioc 7 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; // ui button, PC7 (Feather D5)
         };
         button_1: button_1 {
-            gpios = <&gpioe 11 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; // start button
+            gpios = <&gpioc 3 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; // start button, PC3 (Feather D11)
         };
         button_2: button_2 {
-            gpios = <&gpioe 12 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; // mix button
+            gpios = <&gpioc 2 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; // mix button, PC2 (Feather D12)
         };
     };
     aliases {
@@ -25,27 +25,33 @@
     };
 };
 
-&leds {
+&{/leds} {
     ext_led: led_2 {
-        gpios = <&gpiod 14 GPIO_ACTIVE_HIGH>; // PD14 (Arduino D10)
+        gpios = <&gpioa 4 GPIO_ACTIVE_HIGH>; // PA4 (Feather A0)
     };
 };
 
-/* PD14 is SPI1's chip select by default on this board; SPI isn't used, so free the pin for the LED. */
-&spi1 {
-    status = "disabled";
-};
-
-&timers1 {
+&timers8 {
     /* Board default timers use a 10000 prescaler (~24 kHz tick), which is too coarse for audio tones.
     * A ~2.4 MHz tick gives good pitch resolution and still fits tones down to ~40 Hz in 16 bits. */
     st,prescaler = <99>;
     status = "okay";
 
-    pwm1: pwm {
-        pinctrl-0 = <&tim1_ch1_pe9>;
+    pwm8: pwm {
+        pinctrl-0 = <&tim8_ch1_pc6>;
         pinctrl-names = "default";
         status = "okay";
+    };
+};
+
+&timers3 {
+    status = "okay";
+    qdec: qdec {
+        status = "okay";
+        pinctrl-0 = <&tim3_ch1_pa6 &tim3_ch2_pa7>;
+        pinctrl-names = "default";
+        st,input-filter-level = <FDIV32_N8>;
+        st,counts-per-revolution = <24>;
     };
 };
 

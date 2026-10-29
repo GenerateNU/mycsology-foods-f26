@@ -4,6 +4,7 @@
 #include "seven_seg.h"
 #include "buzzer.h"
 #include "buttons.h"
+#include "dial.h"
 
 static const struct device *seven_seg_dev = DEVICE_DT_GET(DT_NODELABEL(ht16k33));
 static const struct device *buzzer_dev = DEVICE_DT_GET(DT_NODELABEL(buzzer));
@@ -21,8 +22,15 @@ int main(void)
 
     init_all_buttons();
 
+    const int *dial_value_diff = init_dial();
+
     while (1) {
-        k_sleep(K_FOREVER);
+        if (&dial_value_diff > 0) {
+            //UI ++
+        } else if (&dial_value_diff < 0) {
+            //UI --
+        }
+        k_sleep(K_MSEC(1000));
     }
     
     return 0;
