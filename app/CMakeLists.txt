@@ -1,6 +1,8 @@
 
 cmake_minimum_required(VERSION 3.20)
 
+set(SNIPPET cdc-acm-console)
+
 # for global installs
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
@@ -15,9 +17,11 @@ target_sources(app PRIVATE
     src/UI/buttons.c
     src/UI/dial.c
     src/sensors/sht30.c
+    src/control/fan.c
     )
 
 target_include_directories(app PRIVATE 
     inc
     inc/UI
+    inc/control
     )
