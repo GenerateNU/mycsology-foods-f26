@@ -1,6 +1,8 @@
 
 cmake_minimum_required(VERSION 3.20)
 
+set(SNIPPET cdc-acm-console)
+
 # for global installs
 find_package(Zephyr REQUIRED HINTS $ENV{ZEPHYR_BASE})
 
