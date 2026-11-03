@@ -10,6 +10,9 @@
         fan_pwm: fan_pwm {
             pwms = <&pwm4 3 PWM_USEC(40) PWM_POLARITY_INVERTED>;
         };
+        heater_pwm: heater_pwm {
+            pwms = <&pwm11 1 PWM_MSEC(2000) PWM_POLARITY_NORMAL>;
+        };
     };
 
     buttons {
@@ -31,6 +34,7 @@
         b2 = &button_2;
         led2 = &ext_led;
         fan-pwm = &fan_pwm;
+        heater-pwm = &heater_pwm;
     };
 };
 
@@ -72,6 +76,17 @@
     pwm4: pwm {
         status = "okay";
         pinctrl-0 = <&tim4_ch3_pb8>;   /* D9 */
+        pinctrl-names = "default";
+    };
+};
+
+&timers11 {
+    status = "okay";
+    st,prescaler = <83>;   /* 84 MHz / (83+1) = 1 MHz tick */
+
+    pwm11: pwm {
+        status = "okay";
+        pinctrl-0 = <&tim11_ch1_pb9>;   /* D10 */
         pinctrl-names = "default";
     };
 };

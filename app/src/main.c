@@ -13,6 +13,7 @@ LOG_MODULE_REGISTER(main_thread);
 static const struct device *seven_seg_dev = DEVICE_DT_GET(DT_NODELABEL(ht16k33));
 static const struct device *buzzer_dev = DEVICE_DT_GET(DT_NODELABEL(buzzer));
 static const struct pwm_dt_spec fan = PWM_DT_SPEC_GET(DT_ALIAS(fan_pwm));
+static const struct pwm_dt_spec heater = PWM_DT_SPEC_GET(DT_ALIAS(heater_pwm));
 
 int main(void) {
     k_sleep(K_MSEC(3000));
