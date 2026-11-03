@@ -1,8 +1,5 @@
 #include "heater.h"
-#include <stdint.h>
 #include <zephyr/kernel.h>
-#include <zephyr/device.h>
-#include <zephyr/drivers/pwm.h>
 #include <zephyr/logging/log.h>
 
 LOG_MODULE_REGISTER(heater);

@@ -7,6 +7,7 @@
 #include "buttons.h"
 #include "dial.h"
 #include "fan.h"
+#include "heater.h"
 
 LOG_MODULE_REGISTER(main_thread);
 
@@ -38,6 +39,8 @@ int main(void) {
     init_fan(&fan);
 
     int32_t last_pos = dial_get_position();
+
+    init_heater(&heater);
 
     while (1) {
         int32_t pos = dial_get_position();

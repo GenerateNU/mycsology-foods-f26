@@ -18,6 +18,7 @@ target_sources(app PRIVATE
     src/UI/dial.c
     src/sensors/sht30.c
     src/control/fan.c
+    src/control/heater.c
     )
 
 target_include_directories(app PRIVATE 
