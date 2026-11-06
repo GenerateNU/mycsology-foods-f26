@@ -1,4 +1,5 @@
 #include <zephyr/kernel.h>
+#include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/pwm.h>
 
@@ -8,6 +9,7 @@
 #include "dial.h"
 #include "fan.h"
 #include "heater.h"
+#include "motor.h"
 
 LOG_MODULE_REGISTER(main_thread);
 
@@ -15,6 +17,7 @@ static const struct device *seven_seg_dev = DEVICE_DT_GET(DT_NODELABEL(ht16k33))
 static const struct device *buzzer_dev = DEVICE_DT_GET(DT_NODELABEL(buzzer));
 static const struct pwm_dt_spec fan = PWM_DT_SPEC_GET(DT_ALIAS(fan_pwm));
 static const struct pwm_dt_spec heater = PWM_DT_SPEC_GET(DT_ALIAS(heater_pwm));
+static const struct device *stepper = DEVICE_DT_GET(DT_ALIAS(stepper));
 
 int main(void) {
     k_sleep(K_MSEC(3000));
@@ -42,7 +45,11 @@ int main(void) {
 
     init_heater(&heater);
 
+    init_motor(stepper);
+    stepper_move_deg(stepper, 1000);
+
     while (1) {
+        /*
         int32_t pos = dial_get_position();
         int32_t delta = pos - last_pos;
         delta = delta / 2;
@@ -52,6 +59,7 @@ int main(void) {
         fan_speed = CLAMP(fan_speed + delta, 0, 100);
         LOG_INF("fan speed = %d", fan_speed);
         set_fan_percent(&fan, fan_speed);
+        */
         k_sleep(K_MSEC(50));
     }
     
