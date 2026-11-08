@@ -20,6 +20,7 @@ target_sources(app PRIVATE
     src/sensors/sht30_history.c
     src/control/fan.c
     src/control/heater.c
+    src/control/motor.c
     )
 
 target_include_directories(app PRIVATE 

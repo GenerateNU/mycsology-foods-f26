@@ -28,6 +28,13 @@
         };
     };
 
+    stepper: stepper {
+        compatible = "zephyr,gpio-step-dir-stepper-ctrl";
+        step-gpios = <&gpioa 5 GPIO_ACTIVE_HIGH>;   // STEP pin A1
+        dir-gpios  = <&gpioc 4 GPIO_ACTIVE_HIGH>;   // DIR pin A4
+        status = "okay";
+    };
+
     aliases {
         b0 = &button_0;
         b1 = &button_1;
@@ -35,6 +42,7 @@
         led2 = &ext_led;
         fan-pwm = &fan_pwm;
         heater-pwm = &heater_pwm;
+        stepper = &stepper;
     };
 };
 

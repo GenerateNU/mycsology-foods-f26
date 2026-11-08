@@ -1,4 +1,5 @@
 #include <zephyr/kernel.h>
+#include <zephyr/device.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/pwm.h>
 
@@ -8,6 +9,7 @@
 #include "dial.h"
 #include "fan.h"
 #include "heater.h"
+#include "motor.h"
 
 LOG_MODULE_REGISTER(main_thread);
 
@@ -42,7 +44,12 @@ int main(void) {
 
     init_heater(&heater);
 
+    init_motors();
+    mover_stepper_move_deg(360);
+    rake_motion();
+
     while (1) {
+        /*
         int32_t pos = dial_get_position();
         int32_t delta = pos - last_pos;
         delta = delta / 2;
@@ -52,6 +59,7 @@ int main(void) {
         fan_speed = CLAMP(fan_speed + delta, 0, 100);
         LOG_INF("fan speed = %d", fan_speed);
         set_fan_percent(&fan, fan_speed);
+        */
         k_sleep(K_MSEC(50));
     }
     
