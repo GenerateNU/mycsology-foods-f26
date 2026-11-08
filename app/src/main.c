@@ -17,7 +17,6 @@ static const struct device *seven_seg_dev = DEVICE_DT_GET(DT_NODELABEL(ht16k33))
 static const struct device *buzzer_dev = DEVICE_DT_GET(DT_NODELABEL(buzzer));
 static const struct pwm_dt_spec fan = PWM_DT_SPEC_GET(DT_ALIAS(fan_pwm));
 static const struct pwm_dt_spec heater = PWM_DT_SPEC_GET(DT_ALIAS(heater_pwm));
-static const struct device *stepper = DEVICE_DT_GET(DT_ALIAS(stepper));
 
 int main(void) {
     k_sleep(K_MSEC(3000));
@@ -45,8 +44,9 @@ int main(void) {
 
     init_heater(&heater);
 
-    init_motor(stepper);
-    stepper_move_deg(stepper, 1000);
+    init_motors();
+    mover_stepper_move_deg(360);
+    rake_motion();
 
     while (1) {
         /*
