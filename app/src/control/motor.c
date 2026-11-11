@@ -1,14 +1,17 @@
 #include "motor.h"
 #include <zephyr/logging/log.h>
 #include <math.h>
+#include "types.h"
 
 LOG_MODULE_REGISTER(motor);
 
 #define STEPS_PER_REV 200
 #define DEGS_PER_STEP 1.8
 
+extern mcu_t mcu;
+
 static const struct device *rake_dev = DEVICE_DT_GET(DT_ALIAS(stepper));
-static const struct device *move_dev;
+static const struct device *move_dev = DEVICE_DT_GET(DT_ALIAS(mover_stepper));
 
 inline static int32_t angle_to_steps(int32_t deg) {
     return roundf(deg / DEGS_PER_STEP);
@@ -46,40 +49,60 @@ int rake_stepper_move_deg(int32_t deg) {
     return stepper_move_deg(rake_dev, deg);
 }
 
-// go home = move both until limit switch
+// go home = move until limit switch
 int go_home() {
-    // move both until limit switches
     stepper_ctrl_run(move_dev, STEPPER_CTRL_DIRECTION_POSITIVE);
+    bool prev_ls_state = mcu.limit_switch_state;
+    while(prev_ls_state == mcu.limit_switch_state) {
+        k_sleep(K_MSEC(10));
+    }
+    stepper_ctrl_stop(move_dev);
     return 0;
 };
 
 inline int32_t lower_angle() {
-    return -1; // Shrey will give me a formula
+    return -1; // Shrey will give a formula
 };
 
 int rake_motion() {
     // go home
     go_home();
+
     // rake 180
     rake_stepper_move_deg(-180); // ccw
+    k_sleep(K_MSEC(1000));
+
     // move carrige to back (exact number to come)
     mover_stepper_move_deg(-1);
+
     // put in (ccw)
     rake_stepper_move_deg(lower_angle());
+    k_sleep(K_MSEC(1000));
+
     // do first sweep (full track)
     mover_stepper_move_deg(10);
+    k_sleep(K_MSEC(10000)); //10sec
+
     // move back a little
-    mover_stepper_move_deg(1);
+    mover_stepper_move_deg(10);
+
     // flip long way around (cw)
     rake_stepper_move_deg(-2 * lower_angle());
+    k_sleep(K_MSEC(2000));
+
     // sweep back (full)
     mover_stepper_move_deg(-10);
+    k_sleep(K_MSEC(10000));//10sec
+
     // maybe repeat (?)
+
     // bring rake straight up
     rake_stepper_move_deg(lower_angle());
+    k_sleep(K_MSEC(1000));
+
     // move to front limit switch
     go_home();
-     //until limit switch
+
     return 0;
 } //need from shrey: length of track, formula for tray height to rake angle, maybe how far to move back, probably cm to deg for mover.
 

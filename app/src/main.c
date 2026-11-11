@@ -3,6 +3,7 @@
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/pwm.h>
 
+#include "types.h"
 #include "seven_seg.h"
 #include "buzzer.h"
 #include "buttons.h"
@@ -12,6 +13,8 @@
 #include "motor.h"
 
 LOG_MODULE_REGISTER(main_thread);
+
+mcu_t mcu = { .limit_switch_state = 0 };
 
 static const struct device *seven_seg_dev = DEVICE_DT_GET(DT_NODELABEL(ht16k33));
 static const struct device *buzzer_dev = DEVICE_DT_GET(DT_NODELABEL(buzzer));
@@ -31,8 +34,7 @@ int main(void) {
     // Should play done tune.
 
     init_all_buttons();
-    
-    int32_t fan_speed = 0;
+    init_limit_switch();
 
     if (init_dial() != 0) {
         return -1;
