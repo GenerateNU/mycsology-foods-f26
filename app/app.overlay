@@ -15,6 +15,7 @@
         };
     };
 
+    /*
     buttons {
         compatible = "gpio-keys";
         button_0: button_0 {
@@ -27,6 +28,14 @@
             gpios = <&gpioc 2 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; // mix button, PC2 (Feather D12)
         };
     };
+    */
+
+    limit_switches {
+        compatible = "gpio-keys";
+        limit_switch_0: limit_switch_0 {
+            gpios = <&gpioc 7 (GPIO_PULL_UP | GPIO_ACTIVE_LOW)>; // limit switch, PC7 (Feather D5)
+        };
+    };
 
     stepper: stepper {
         compatible = "zephyr,gpio-step-dir-stepper-ctrl";
@@ -35,14 +44,23 @@
         status = "okay";
     };
 
+    mover_stepper: mover_stepper {
+        compatible = "zephyr,gpio-step-dir-stepper-ctrl";
+        step-gpios = <&gpioc 3 GPIO_ACTIVE_HIGH>;   // STEP pin D11 (PC3)
+        dir-gpios  = <&gpioc 2 GPIO_ACTIVE_HIGH>;   // DIR pin D12 (PC2)
+        status = "okay";
+    };
+
     aliases {
-        b0 = &button_0;
-        b1 = &button_1;
-        b2 = &button_2;
+        // b0 = &button_0;
+        // b1 = &button_1;
+        // b2 = &button_2;
         led2 = &ext_led;
         fan-pwm = &fan_pwm;
         heater-pwm = &heater_pwm;
         stepper = &stepper;
+        mover-stepper = &mover_stepper;
+        limit-sw = &limit_switch_0;
     };
 };
 

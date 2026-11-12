@@ -3,12 +3,16 @@
 
 LOG_MODULE_REGISTER(buttons);
 
-static const struct gpio_dt_spec start_button = GPIO_DT_SPEC_GET(DT_ALIAS(b1), gpios);
+extern mcu_t mcu;
+
+static const struct gpio_dt_spec start_button;
 static struct gpio_callback start_button_cb_data;
-static const struct gpio_dt_spec mix_button = GPIO_DT_SPEC_GET(DT_ALIAS(b2), gpios);
+static const struct gpio_dt_spec mix_button;
 static struct gpio_callback mix_button_cb_data;
-static const struct gpio_dt_spec ui_button = GPIO_DT_SPEC_GET(DT_ALIAS(b0), gpios);
+static const struct gpio_dt_spec ui_button;
 static struct gpio_callback ui_button_cb_data;
+static const struct gpio_dt_spec limit_switch = GPIO_DT_SPEC_GET(DT_ALIAS(limit_sw), gpios);
+static struct gpio_callback limit_switch_cb_data;
 
 static const struct gpio_dt_spec ext_led = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
 static bool led_state = false;
@@ -30,6 +34,10 @@ int init_all_buttons() {
     init_button(&start_button, &start_button_cb_data, start_button_callback) ||
     init_button(&mix_button, &mix_button_cb_data, mix_button_callback) ||
     init_button(&ui_button, &ui_button_cb_data, ui_button_callback);
+}
+
+int init_limit_switch() {
+    return init_button(&limit_switch, &limit_switch_cb_data, limit_switch_callback);
 }
 
 /**
@@ -98,4 +106,9 @@ void ui_button_callback(const struct device *dev, struct gpio_callback *cb, uint
     // Add logic here
     gpio_pin_set_dt(&ext_led, (led_state) ? 1 : 0);
     led_state = !led_state;
+}
+
+void limit_switch_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
+    // Add logic here
+    mcu.limit_switch_state = !mcu.limit_switch_state;
 }
