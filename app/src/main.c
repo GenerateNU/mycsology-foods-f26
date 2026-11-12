@@ -1,6 +1,7 @@
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/pwm.h>
+#include <zephyr/logging/log.h>
 
 #include "seven_seg.h"
 #include "buzzer.h"
@@ -59,6 +60,8 @@ int main(void) {
 }
 
 #if 0
+
+
 /*
  * Reference only — SHT30 history smoke test (not built).
  * Swap this in locally when flashing sensor-only; do not enable on main.

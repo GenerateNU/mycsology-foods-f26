@@ -1,0 +1,12 @@
+CompileFlags:
+  CompilationDatabase: app
+  Add:
+    - -I/Users/rohandutta/Myscology_Foods/app/clangd_stubs
+    - -I/Users/rohandutta/Myscology_Foods/app/inc
+    - -I/Users/rohandutta/Myscology_Foods/app/inc/UI
+    - -I/Users/rohandutta/Myscology_Foods/app/inc/control
+  Remove:
+    - -fno-printf-return-value
+    - -mfp16-format=*
+    - -fno-reorder-functions
+    - -specs=*

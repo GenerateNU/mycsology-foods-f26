@@ -8,3 +8,6 @@ doc/
 modules/
 tools/
 zephyr/
+compile_commands.json
+app/compile_commands.json
+

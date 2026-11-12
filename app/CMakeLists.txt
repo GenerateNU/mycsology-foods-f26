@@ -18,6 +18,7 @@ target_sources(app PRIVATE
     src/UI/dial.c
     src/sensors/sht30.c
     src/sensors/sht30_history.c
+    src/sensors/ds18b20.c
     src/control/fan.c
     src/control/heater.c
     )
