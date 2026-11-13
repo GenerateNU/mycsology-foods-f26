@@ -106,6 +106,7 @@ void ui_button_callback(const struct device *dev, struct gpio_callback *cb, uint
     // Add logic here
     gpio_pin_set_dt(&ext_led, (led_state) ? 1 : 0);
     led_state = !led_state;
+    mcu.ui_button = !mcu.ui_button;
 }
 
 void limit_switch_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {

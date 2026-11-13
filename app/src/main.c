@@ -14,7 +14,10 @@
 
 LOG_MODULE_REGISTER(main_thread);
 
-mcu_t mcu = { .limit_switch_state = 0 };
+float default_set_points[7] = {-1, -1, 50, 30, -1, -1, -1};
+float default_current_values[7] = {-1, -1, -1, -1, -1, -1, -1};
+
+mcu_t mcu = { .limit_switch_state = 0, .ui_button = 0, .set_points = default_set_points, .current_values = default_current_values };
 
 static const struct device *seven_seg_dev = DEVICE_DT_GET(DT_NODELABEL(ht16k33));
 static const struct device *buzzer_dev = DEVICE_DT_GET(DT_NODELABEL(buzzer));
