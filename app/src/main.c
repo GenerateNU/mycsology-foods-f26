@@ -1,3 +1,4 @@
+#if 0 /* UI main — restore when sensor bring-up is done */
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/gpio.h>
 #include <zephyr/drivers/pwm.h>
@@ -58,14 +59,15 @@ int main(void) {
     
     return 0;
 }
+#endif /* UI main */
 
-#if 0
-
-
+#if 1
 /*
- * Reference only — SHT30 history smoke test (not built).
- * Swap this in locally when flashing sensor-only; do not enable on main.
+ * Sensor smoke tests — enable exactly one of SHT30 / DS18B20 below.
+ * DS18B20: DS2482-800 @ I2C 0x1a, channel 0 (DT_NODELABEL(w1)).
  */
+
+#if 0 /* SHT30 history handoff */
 #include <zephyr/kernel.h>
 #include <zephyr/drivers/i2c.h>
 #include <zephyr/logging/log.h>
@@ -80,13 +82,10 @@ static const struct i2c_dt_spec sht30_i2c = I2C_DT_SPEC_GET(DT_NODELABEL(sht30))
 int main(void)
 {
 	struct sht30_sample sample;
+	struct sht30_reading reading;
 
-	LOG_INF("SHT30 smoke test starting");
-	if (sht30_init(&sht30_i2c) != 0) {
-		LOG_ERR("sht30_init failed");
-		return -1;
-	}
-
+	LOG_INF("SHT30 handoff smoke test starting");
+	sht30_history_init();
 	sht30_history_reset();
 
 	while (1) {
@@ -94,22 +93,24 @@ int main(void)
 
 		if (err == 0) {
 			sht30_history_push(&sample);
-			int16_t avgt = sht30_history_avg_temp();
-			uint16_t avgh = sht30_history_avg_hum();
 
-			int t = sample.temp_c_x100;
-			unsigned t_frac = (unsigned)((t < 0) ? -t : t) % 100;
-			unsigned avgt_frac = (unsigned)((avgt < 0) ? -avgt : avgt) % 100;
+			if (sht30_history_get_latest(&reading) == 0) {
+				int t = reading.newest.temp_c_x100;
+				unsigned t_frac = (unsigned)((t < 0) ? -t : t) % 100;
+				int at = reading.avg_temp_c_x100;
+				unsigned at_frac = (unsigned)((at < 0) ? -at : at) % 100;
 
-			LOG_INF("T=%d.%02u C  RH=%u.%02u %%  (history=%u)",
-				t / 100, t_frac,
-				sample.rh_x100 / 100,
-				sample.rh_x100 % 100,
-				(unsigned)sht30_history_count());
-
-			LOG_INF("AVG T=%d.%02u C  AVG RH=%u.%02u %%",
-				avgt / 100, avgt_frac,
-				avgh / 100, avgh % 100);
+				LOG_INF("T=%d.%02u C  RH=%u.%02u %%  hist=%u seq=%u",
+					t / 100, t_frac,
+					reading.newest.rh_x100 / 100,
+					reading.newest.rh_x100 % 100,
+					(unsigned)sht30_history_count(),
+					reading.seq);
+				LOG_INF("AVG T=%d.%02u C  AVG RH=%u.%02u %%",
+					at / 100, at_frac,
+					reading.avg_rh_x100 / 100,
+					reading.avg_rh_x100 % 100);
+			}
 		} else {
 			LOG_ERR("sht30_read failed: %d", err);
 		}
@@ -119,4 +120,41 @@ int main(void)
 
 	return 0;
 }
+#endif /* SHT30 */
+
+#if 1 /* DS18B20 — via DS2482-800 @ 0x1a, ch0 */
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
+
+#include "sensors/ds18b20.h"
+
+LOG_MODULE_REGISTER(main);
+
+static const struct device *w1 = DEVICE_DT_GET(DT_NODELABEL(w1));
+
+int main(void)
+{
+	struct ds18b20_sample sample;
+
+	LOG_INF("DS18B20 smoke test starting (DS2482-800 @ 0x1a ch0)");
+
+	while (1) {
+		int err = ds18b20_read(w1, DS18B20_RES_12BIT, &sample);
+
+		if (err == 0) {
+			int t = sample.temp_c_x100;
+			unsigned t_frac = (unsigned)((t < 0) ? -t : t) % 100;
+
+			LOG_INF("T=%d.%02u C", t / 100, t_frac);
+		} else {
+			LOG_ERR("ds18b20_read failed: %d", err);
+		}
+
+		k_msleep(2000);
+	}
+
+	return 0;
+}
+#endif /* DS18B20 */
+
 #endif

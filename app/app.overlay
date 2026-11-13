@@ -35,6 +35,7 @@
         led2 = &ext_led;
         fan-pwm = &fan_pwm;
         heater-pwm = &heater_pwm;
+        ds18b20-w1 = &w1;
     };
 };
 
@@ -101,6 +102,33 @@
     ht16k33: ht16k33@70 {
         compatible = "holtek,ht16k33";
         reg = <0x70>;
+    };
+
+    /*
+     * SHT30-D air temp/humidity. ADDR pin low → 0x44.
+     * App driver uses I2C_DT_SPEC_GET(DT_NODELABEL(sht30)); in-tree SHT3XD is off in prj.conf.
+     */
+    sht30: sht30@44 {
+        compatible = "sensirion,sht3xd";
+        reg = <0x44>;
+    };
+
+    /*
+     * DS2482-800 1-Wire bridge. AD0/AD1/AD2 straps set the I2C address;
+     * A1 strapped → 0x1A (default unstrapped sample addr is 0x18).
+     * Channel 0 is the W1 master used by the app DS18B20 driver.
+     */
+    ds2482_800: ds2482-800@1a {
+        compatible = "maxim,ds2482-800";
+        reg = <0x1a>;
+
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        w1: ch@0 {
+            compatible = "maxim,ds2482-800-channel";
+            reg = <0>;
+        };
     };
 };
 
