@@ -5,11 +5,12 @@ LOG_MODULE_REGISTER(buttons);
 
 extern mcu_t mcu;
 
-static const struct gpio_dt_spec start_button;
+// Buttons fall back to an empty spec (skipped in init_button) until their aliases exist in app.overlay
+static const struct gpio_dt_spec start_button = GPIO_DT_SPEC_GET_OR(DT_ALIAS(b1), gpios, {0});
 static struct gpio_callback start_button_cb_data;
-static const struct gpio_dt_spec mix_button;
+static const struct gpio_dt_spec mix_button = GPIO_DT_SPEC_GET_OR(DT_ALIAS(b2), gpios, {0});
 static struct gpio_callback mix_button_cb_data;
-static const struct gpio_dt_spec ui_button;
+static const struct gpio_dt_spec ui_button = GPIO_DT_SPEC_GET_OR(DT_ALIAS(b0), gpios, {0});
 static struct gpio_callback ui_button_cb_data;
 static const struct gpio_dt_spec limit_switch = GPIO_DT_SPEC_GET(DT_ALIAS(limit_sw), gpios);
 static struct gpio_callback limit_switch_cb_data;
@@ -41,6 +42,16 @@ int init_limit_switch() {
 }
 
 /**
+ * @brief Checks if a button was pressed since the last call, and clears it
+ * 
+ * @param btn which button to check
+ * @return true once per press (bounces between calls count as one press)
+ */
+bool button_pressed(enum button_event btn) {
+    return atomic_test_and_clear_bit(&mcu.button_events, btn);
+}
+
+/**
  * @brief led init for testing, TODO: move later
  * 
  * @return int 
@@ -64,6 +75,11 @@ int init_button(
 ) 
 {
     int ret;
+
+    if (button->port == NULL) {
+        LOG_WRN("Button not defined in devicetree, skipping");
+        return 0;
+    }
  
     if (!gpio_is_ready_dt(button)) {
         LOG_ERR("Button device not ready");
@@ -94,19 +110,21 @@ void start_button_callback(const struct device *dev, struct gpio_callback *cb, u
     // Add state change logic here (Configuration -> Preheat)
     gpio_pin_set_dt(&ext_led, (led_state) ? 1 : 0);
     led_state = !led_state;
+    atomic_set_bit(&mcu.button_events, BTN_START);
 }
 
 void mix_button_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
     // Add state change logic here (Config -> Mix)
     gpio_pin_set_dt(&ext_led, (led_state) ? 1 : 0);
     led_state = !led_state;
+    atomic_set_bit(&mcu.button_events, BTN_MIX);
 }
 
 void ui_button_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
     // Add logic here
     gpio_pin_set_dt(&ext_led, (led_state) ? 1 : 0);
     led_state = !led_state;
-    mcu.ui_button = !mcu.ui_button;
+    atomic_set_bit(&mcu.button_events, BTN_UI);
 }
 
 void limit_switch_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {

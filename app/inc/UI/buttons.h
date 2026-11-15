@@ -8,6 +8,7 @@
 
 int init_all_buttons();
 int init_limit_switch();
+bool button_pressed(enum button_event btn);
 
 // Callbacks
 
