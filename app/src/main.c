@@ -11,6 +11,7 @@
 #include "fan.h"
 #include "heater.h"
 #include "motor.h"
+#include "ui.h"
 
 LOG_MODULE_REGISTER(main_thread);
 
@@ -19,7 +20,7 @@ float default_current_values[7] = {-1, -1, -1, -1, -1, -1, -1};
 
 mcu_t mcu = { .limit_switch_state = 0, .button_events = ATOMIC_INIT(0), .set_points = default_set_points, .current_values = default_current_values };
 
-static const struct device *seven_seg_dev = DEVICE_DT_GET(DT_NODELABEL(ht16k33));
+const struct device *setpoint = DEVICE_DT_GET(DT_NODELABEL(ht16k33));
 static const struct device *buzzer_dev = DEVICE_DT_GET(DT_NODELABEL(buzzer));
 static const struct pwm_dt_spec fan = PWM_DT_SPEC_GET(DT_ALIAS(fan_pwm));
 static const struct pwm_dt_spec heater = PWM_DT_SPEC_GET(DT_ALIAS(heater_pwm));
@@ -27,8 +28,8 @@ static const struct pwm_dt_spec heater = PWM_DT_SPEC_GET(DT_ALIAS(heater_pwm));
 int main(void) {
     k_sleep(K_MSEC(3000));
 
-    clear_seven_seg(seven_seg_dev);
-    display_seven_seg(seven_seg_dev, "belo.");
+    clear_seven_seg(setpoint);
+    display_seven_seg(setpoint, "belo.");
     // Should display: belo.
 
     buzzer_play_tune(buzzer_dev, done_tune, 4);
@@ -49,7 +50,9 @@ int main(void) {
 
     init_motors();
     mover_stepper_move_deg(360);
-    rake_motion();
+    //rake_motion();
+
+    ui_sequence();
 
     while (1) {
         //rake_stepper_move_deg(-360);

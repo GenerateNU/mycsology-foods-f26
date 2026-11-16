@@ -18,6 +18,29 @@ static struct gpio_callback limit_switch_cb_data;
 static const struct gpio_dt_spec ext_led = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
 static bool led_state = false;
 
+/*
+ * Debounce: each edge (re)starts a DEBOUNCE_MS timer. When it expires the pin is read again,
+ * and the press only counts if the button is still held. Bounces (including on release) and
+ * short noise spikes never get recorded.
+ */
+#define DEBOUNCE_MS 20
+
+static struct debounced_button start_btn = { .spec = &start_button, .event = BTN_START };
+static struct debounced_button mix_btn   = { .spec = &mix_button,   .event = BTN_MIX };
+static struct debounced_button ui_btn    = { .spec = &ui_button,    .event = BTN_UI };
+
+static void debounce_handler(struct k_work *work) {
+    struct k_work_delayable *dwork = k_work_delayable_from_work(work);
+    struct debounced_button *btn = CONTAINER_OF(dwork, struct debounced_button, work);
+
+    if (gpio_pin_get_dt(btn->spec) == 1) { // logical level: 1 = pressed (active low handled by devicetree)
+        atomic_set_bit(&mcu.button_events, btn->event);
+        gpio_pin_set_dt(&ext_led, (led_state) ? 1 : 0); // test led, toggles once per real press
+        led_state = !led_state;
+        LOG_DBG("button %d pressed", btn->event);
+    }
+}
+
 int init_led();
 int init_button(
     const struct gpio_dt_spec *button, 
@@ -31,6 +54,11 @@ int init_button(
  * @return int 
  */
 int init_all_buttons() {
+    // work items must be ready before interrupts are enabled in init_button
+    k_work_init_delayable(&start_btn.work, debounce_handler);
+    k_work_init_delayable(&mix_btn.work, debounce_handler);
+    k_work_init_delayable(&ui_btn.work, debounce_handler);
+
     return init_led() ||
     init_button(&start_button, &start_button_cb_data, start_button_callback) ||
     init_button(&mix_button, &mix_button_cb_data, mix_button_callback) ||
@@ -45,7 +73,7 @@ int init_limit_switch() {
  * @brief Checks if a button was pressed since the last call, and clears it
  * 
  * @param btn which button to check
- * @return true once per press (bounces between calls count as one press)
+ * @return true once per debounced press
  */
 bool button_pressed(enum button_event btn) {
     return atomic_test_and_clear_bit(&mcu.button_events, btn);
@@ -104,27 +132,18 @@ int init_button(
     return 0;
 }
 
-// Callback functions (all are mapped to an led for testing)
+// Button callbacks (ISR): just restart the debounce timer, debounce_handler records the press
 
 void start_button_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-    // Add state change logic here (Configuration -> Preheat)
-    gpio_pin_set_dt(&ext_led, (led_state) ? 1 : 0);
-    led_state = !led_state;
-    atomic_set_bit(&mcu.button_events, BTN_START);
+    k_work_reschedule(&start_btn.work, K_MSEC(DEBOUNCE_MS));
 }
 
 void mix_button_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-    // Add state change logic here (Config -> Mix)
-    gpio_pin_set_dt(&ext_led, (led_state) ? 1 : 0);
-    led_state = !led_state;
-    atomic_set_bit(&mcu.button_events, BTN_MIX);
+    k_work_reschedule(&mix_btn.work, K_MSEC(DEBOUNCE_MS));
 }
 
 void ui_button_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
-    // Add logic here
-    gpio_pin_set_dt(&ext_led, (led_state) ? 1 : 0);
-    led_state = !led_state;
-    atomic_set_bit(&mcu.button_events, BTN_UI);
+    k_work_reschedule(&ui_btn.work, K_MSEC(DEBOUNCE_MS));
 }
 
 void limit_switch_callback(const struct device *dev, struct gpio_callback *cb, uint32_t pins) {
