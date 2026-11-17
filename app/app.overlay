@@ -8,7 +8,7 @@
     pwmleds {
         compatible = "pwm-leds";
         fan_pwm: fan_pwm {
-            pwms = <&pwm4 3 PWM_USEC(40) PWM_POLARITY_INVERTED>;
+            pwms = <&pwm4 3 PWM_USEC(40) PWM_POLARITY_NORMAL>;
         };
         heater_pwm: heater_pwm {
             pwms = <&pwm11 1 PWM_MSEC(2000) PWM_POLARITY_NORMAL>;
@@ -95,7 +95,7 @@
         pinctrl-0 = <&tim3_ch1_pa6 &tim3_ch2_pa7>;   /* A2, A3 */
         pinctrl-names = "default";
         st,input-filter-level = <FDIV32_N8>;
-        st,counts-per-revolution = <24>;
+        st,counts-per-revolution = <48>;
     };
 };
 

@@ -15,10 +15,16 @@
 
 LOG_MODULE_REGISTER(main_thread);
 
-float default_set_points[7] = {-1, -1, 50, 30, -1, -1, -1};
+float default_set_points[7] = {1, 2, 3, 4, 5, 6, 7};
 float default_current_values[7] = {-1, -1, -1, -1, -1, -1, -1};
 
-mcu_t mcu = { .limit_switch_state = 0, .button_events = ATOMIC_INIT(0), .set_points = default_set_points, .current_values = default_current_values };
+mcu_t mcu = { 
+    .limit_switch_state = 0, 
+    .button_events = ATOMIC_INIT(0), 
+    .set_points = default_set_points, 
+    .current_values = default_current_values, 
+    .bake_start = false 
+};
 
 const struct device *setpoint = DEVICE_DT_GET(DT_NODELABEL(ht16k33));
 static const struct device *buzzer_dev = DEVICE_DT_GET(DT_NODELABEL(buzzer));

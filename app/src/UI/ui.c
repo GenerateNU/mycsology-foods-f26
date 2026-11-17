@@ -1,5 +1,7 @@
 #include "ui.h"
 #include <zephyr/logging/log.h>
+#include <math.h>
+#include "buzzer.h" 
 
 LOG_MODULE_REGISTER(ui);
 
@@ -70,6 +72,14 @@ int ui_sequence() {
     ui_state_t current_cata = 0;
 
     while (1) {
+        if (button_pressed(BTN_START)) {
+            LOG_INF("bake started normally.");
+            mcu.bake_start = true;
+            return 0;
+        }
+        if (button_pressed(BTN_MIX)) {
+            //MIX
+        }
         if (button_pressed(BTN_UI) && 
         (current_cata == SUBSTRATE_LEVEL || 
             current_cata == TIME || 
@@ -78,7 +88,14 @@ int ui_sequence() {
             current_cata == FAN_SPEED)) 
             {
             LOG_INF("editing %s", cata_names[current_cata]);
-            edit_cata(current_cata, &last_pos);
+
+            int ret = edit_cata(current_cata, &last_pos);
+            if (ret) {
+                LOG_INF("bake started during editing.");
+                mcu.bake_start = true;int32_t dial_delta(int32_t *last_pos);
+
+                return 0;
+            }
             LOG_INF("done editing %s", cata_names[current_cata]);
         }
 
@@ -102,9 +119,12 @@ int ui_sequence() {
     }
 }
 
-int edit_cata(ui_state_t cata, int32_t *last_pos) {
+static int edit_cata(ui_state_t cata, int32_t *last_pos) {
     float current_value = mcu.set_points[cata];
     while(1) {
+        if (button_pressed(BTN_START)) {
+            return 1;
+        }
         if (button_pressed(BTN_UI)) {
             mcu.set_points[cata] = current_value;
             char saved_str[8];
@@ -130,7 +150,7 @@ int32_t dial_delta(int32_t *last_pos) {
     if (delta != 0) {
         LOG_DBG("dial pos=%d raw=%d", pos, delta);
     }
-    //delta = delta / 2;
+    // delta = delta / 2 + delta % 2;
     *last_pos = pos;
     return delta;
 }

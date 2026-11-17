@@ -15,6 +15,7 @@ enum button_event {
 typedef struct {
     volatile bool limit_switch_state;
     atomic_t button_events;
+    volatile bool bake_start;
 
     volatile float *set_points;
     volatile float *current_values;

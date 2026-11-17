@@ -18,7 +18,6 @@ typedef enum {
     NUM_UI_STATES
 } ui_state_t;
 
-int edit_cata(ui_state_t cata, int32_t *last_pos);
 int32_t dial_delta(int32_t *last_pos);
 int ui_sequence();
 
