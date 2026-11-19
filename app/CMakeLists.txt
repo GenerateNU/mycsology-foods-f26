@@ -21,6 +21,7 @@ target_sources(app PRIVATE
     src/control/fan.c
     src/control/heater.c
     src/control/motor.c
+    src/UI/ui.c
     )
 
 target_include_directories(app PRIVATE 

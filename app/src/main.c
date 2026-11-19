@@ -11,12 +11,22 @@
 #include "fan.h"
 #include "heater.h"
 #include "motor.h"
+#include "ui.h"
 
 LOG_MODULE_REGISTER(main_thread);
 
-mcu_t mcu = { .limit_switch_state = 0 };
+float default_set_points[7] = {1, 2, 3, 4, 5, 6, 7};
+float default_current_values[7] = {-1, -1, -1, -1, -1, -1, -1};
 
-static const struct device *seven_seg_dev = DEVICE_DT_GET(DT_NODELABEL(ht16k33));
+mcu_t mcu = { 
+    .limit_switch_state = 0, 
+    .button_events = ATOMIC_INIT(0), 
+    .set_points = default_set_points, 
+    .current_values = default_current_values, 
+    .bake_start = false 
+};
+
+const struct device *setpoint = DEVICE_DT_GET(DT_NODELABEL(ht16k33));
 static const struct device *buzzer_dev = DEVICE_DT_GET(DT_NODELABEL(buzzer));
 static const struct pwm_dt_spec fan = PWM_DT_SPEC_GET(DT_ALIAS(fan_pwm));
 static const struct pwm_dt_spec heater = PWM_DT_SPEC_GET(DT_ALIAS(heater_pwm));
@@ -24,10 +34,8 @@ static const struct pwm_dt_spec heater = PWM_DT_SPEC_GET(DT_ALIAS(heater_pwm));
 int main(void) {
     k_sleep(K_MSEC(3000));
 
-    clear_seven_seg(seven_seg_dev);
-    char test[] = {'b','e','l','o'};
-    display_seven_seg(seven_seg_dev, test, 4);
-    display_seven_seg_punctuation(seven_seg_dev, 0b00001);
+    clear_seven_seg(setpoint);
+    display_seven_seg(setpoint, "belo.");
     // Should display: belo.
 
     buzzer_play_tune(buzzer_dev, done_tune, 4);
@@ -48,9 +56,12 @@ int main(void) {
 
     init_motors();
     mover_stepper_move_deg(360);
-    rake_motion();
+    //rake_motion();
+
+    ui_sequence();
 
     while (1) {
+        //rake_stepper_move_deg(-360);
         /*
         int32_t pos = dial_get_position();
         int32_t delta = pos - last_pos;
@@ -62,7 +73,7 @@ int main(void) {
         LOG_INF("fan speed = %d", fan_speed);
         set_fan_percent(&fan, fan_speed);
         */
-        k_sleep(K_MSEC(50));
+        k_sleep(K_MSEC(500));
     }
     
     return 0;

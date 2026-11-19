@@ -47,15 +47,14 @@ static const uint8_t siekoo_seg[36] = {
     0x1B,  /* z  abde    */
 };
 
-static const uint8_t digit_offset[4] = { //Which of the 4 digits to put the number, color is 33
+static const uint8_t digit_offset[4] = { //Which of the 4 digits to put the number, colon is 33
     0,
     16, 
     48, 
     64,
 };
 
-int display_seven_seg(const struct device *dev, char* chars, size_t size);
-int display_seven_seg_punctuation(const struct device *dev, uint8_t punc_index);
+int display_seven_seg(const struct device *dev, const char *str);
 int clear_seven_seg(const struct device *dev);
 
 
