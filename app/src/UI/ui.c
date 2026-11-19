@@ -22,6 +22,8 @@ static const struct gpio_dt_spec cata_leds[NUM_UI_STATES] = {
 const struct device *current;
 extern const struct device *setpoint;
 
+static int edit_cata(ui_state_t cata, int32_t *last_pos);
+
 static void init_cata_leds(void) {
     for (int i = 0; i < NUM_UI_STATES; i++) {
         if (cata_leds[i].port != NULL && gpio_is_ready_dt(&cata_leds[i])) {
@@ -92,7 +94,7 @@ int ui_sequence() {
             int ret = edit_cata(current_cata, &last_pos);
             if (ret) {
                 LOG_INF("bake started during editing.");
-                mcu.bake_start = true;int32_t dial_delta(int32_t *last_pos);
+                mcu.bake_start = true;
 
                 return 0;
             }
@@ -121,6 +123,7 @@ int ui_sequence() {
 
 static int edit_cata(ui_state_t cata, int32_t *last_pos) {
     float current_value = mcu.set_points[cata];
+    int64_t last_change = 0;
     while(1) {
         if (button_pressed(BTN_START)) {
             return 1;
@@ -133,12 +136,27 @@ static int edit_cata(ui_state_t cata, int32_t *last_pos) {
             return 0;
         }
         int32_t delta = dial_delta(last_pos);
-        current_value += 0.1 * delta;
+        current_value += 0.1f * delta;
+        current_value = CLAMP(current_value, 0.0f, 99.9f);
 
-        current_value = CLAMP(current_value, 0, 99.9);
+        // on for 500 ms, off for 500 ms
+        if (delta != 0) {
+            last_change = k_uptime_get();
+        }
+        bool blink_on = (k_uptime_get() - last_change < 500) ||
+                        ((k_uptime_get() / 500) % 2 == 0);
+
+        if (blink_on) {
+            char set_str[5];
+            snprintf(set_str, sizeof(set_str), "%.1f", (double)current_value);
+            display_seven_seg(setpoint, set_str);
+        } else {
+
+            clear_seven_seg(setpoint);
+        }
 
         char set_str[5];
-        snprintf(set_str, sizeof(set_str), "%.1f", current_value);
+        snprintf(set_str, sizeof(set_str), "%.1f", (double)current_value);
         display_seven_seg(setpoint, set_str);
         k_sleep(K_MSEC(50));
     }
