@@ -132,6 +132,27 @@
         compatible = "holtek,ht16k33";
         reg = <0x70>;
     };
+
+    /*
+     * DS2482-800 1-Wire bridge. AD straps low → I2C 0x18.
+     * Channel 0 (IO0) is the W1 master for the app DS18B20 driver.
+     */
+    ds2482_800: ds2482-800@18 {
+        compatible = "maxim,ds2482-800";
+        reg = <0x18>;
+        status = "okay";
+
+        #address-cells = <1>;
+        #size-cells = <0>;
+
+        w1: ch@0 {
+            compatible = "maxim,ds2482-800-channel";
+            reg = <0>;
+            status = "okay";
+            /* Needed for reliable rising edges / reads on real cabling. */
+            active-pullup;
+        };
+    };
 };
 
 &tim3_ch1_pa6 { bias-pull-up; };   /* A2: encoder A */
