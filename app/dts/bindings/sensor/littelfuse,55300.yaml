@@ -1,0 +1,72 @@
+description: |
+  Littelfuse 55300 flat pack rotary Hall sensor, analog output, read through
+  an ADC channel behind a resistor divider. Driver: app/src/sensors/hall_effect.c
+
+  Example:
+    knob: rotary_sensor {
+      compatible = "littelfuse,55300";
+      io-channels = <&adc1 4>;
+      output-min-mv = <500>;
+      output-max-mv = <4500>;
+      full-ohms = <30000>;
+      output-ohms = <20000>;
+    };
+
+compatible: "littelfuse,55300"
+
+include: sensor-device.yaml
+
+properties:
+  io-channels:
+    type: phandle-array
+    required: true
+    description: ADC channel the sensor output (after the divider) is wired to.
+
+  output-min-mv:
+    type: int
+    required: true
+    description: Sensor output voltage at 0 degrees, before the divider (mV).
+
+  output-max-mv:
+    type: int
+    required: true
+    description: Sensor output voltage at 360 degrees, before the divider (mV).
+
+  full-ohms:
+    type: int
+    required: true
+    description: Total divider resistance, top + bottom (ohms).
+
+  output-ohms:
+    type: int
+    required: true
+    description: Bottom divider resistor, ADC pin to GND (ohms).
+
+  band-margin-mv:
+    type: int
+    default: 250
+    description: |
+      Allowed margin outside output-min/max before the reading is treated as
+      a diagnostic level (no magnet).
+
+  jitter-threshold-mdeg:
+    type: int
+    default: 20000
+    description: |
+      Average step between fetches (milli-degrees) above which the magnet is
+      considered lost. 0 disables the jitter check.
+
+  debounce:
+    type: int
+    default: 3
+    description: Consecutive fetches needed to change the magnet-present state.
+
+  samples:
+    type: int
+    default: 8
+    description: ADC samples averaged per fetch.
+
+  filter-shift:
+    type: int
+    default: 2
+    description: Angle low-pass strength; new = old + diff / 2^shift. 0 = off.

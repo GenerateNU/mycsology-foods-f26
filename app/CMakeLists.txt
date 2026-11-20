@@ -22,10 +22,12 @@ target_sources(app PRIVATE
     src/control/heater.c
     src/control/motor.c
     src/UI/ui.c
+    src/sensors/hall_effect.c
     )
 
 target_include_directories(app PRIVATE 
     inc
     inc/UI
     inc/control
+    inc/sensors
     )

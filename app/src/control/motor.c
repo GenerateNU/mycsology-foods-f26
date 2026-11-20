@@ -2,6 +2,7 @@
 #include <zephyr/logging/log.h>
 #include <math.h>
 #include "types.h"
+#include "hall_effect.h"
 
 LOG_MODULE_REGISTER(motor);
 
@@ -12,6 +13,8 @@ extern mcu_t mcu;
 
 static const struct device *rake_dev = DEVICE_DT_GET(DT_ALIAS(stepper));
 static const struct device *move_dev = DEVICE_DT_GET(DT_ALIAS(mover_stepper));
+
+static const struct device *hall = DEVICE_DT_GET(DT_NODELABEL(hall));
 
 inline static int32_t angle_to_steps(int32_t deg) {
     return roundf(deg / DEGS_PER_STEP);
@@ -24,6 +27,11 @@ int init_motors() {
     }
     if (!device_is_ready(move_dev)) {
         LOG_ERR("motor: move device not ready.");
+        return 1;
+    }
+
+    if (!device_is_ready(hall)) {
+        LOG_ERR("hall: hall device not ready.");
         return 1;
     }
 
@@ -50,7 +58,7 @@ int rake_stepper_move_deg(int32_t deg) {
 }
 
 // go home = move until limit switch
-int go_home() {
+int go_home_mover() {
     stepper_ctrl_run(move_dev, STEPPER_CTRL_DIRECTION_POSITIVE);
     bool prev_ls_state = mcu.limit_switch_state;
     while(prev_ls_state == mcu.limit_switch_state) {
@@ -60,13 +68,35 @@ int go_home() {
     return 0;
 };
 
+int go_home_rake() {
+    stepper_ctrl_run(rake_dev, STEPPER_CTRL_DIRECTION_POSITIVE);
+    struct sensor_value present;
+    while(1) {
+        if (sensor_sample_fetch(hall) != 0) {
+			LOG_INF("ADC error\n");
+			k_msleep(500);
+			continue;
+		}
+        sensor_channel_get(hall, SENSOR_CHAN_MAGNET_PRESENT, &present);
+        if (present.val1 == 1) {
+            stepper_ctrl_stop(rake_dev);
+            LOG_INF("*** MAGNET %s ***\n", present.val1 ? "PRESENT" : "NOT PRESENT");
+            return 0;
+        }
+        LOG_INF("*** MAGNET %s ***\n", present.val1 ? "PRESENT" : "NOT PRESENT");
+        k_msleep(10);
+    }
+}
+
 inline int32_t lower_angle() {
     return -1; // Shrey will give a formula
 };
 
 int rake_motion() {
     // go home
-    go_home();
+    go_home_mover();
+    k_msleep(1000);
+    go_home_rake();
 
     // rake 180
     rake_stepper_move_deg(-180); // ccw
@@ -101,7 +131,8 @@ int rake_motion() {
     k_sleep(K_MSEC(1000));
 
     // move to front limit switch
-    go_home();
+    go_home_mover();
+    go_home_rake();
 
     return 0;
 } //need from shrey: length of track, formula for tray height to rake angle, maybe how far to move back, probably cm to deg for mover.
