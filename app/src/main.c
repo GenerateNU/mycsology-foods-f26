@@ -138,3 +138,47 @@ int main(void)
 	return 0;
 }
 #endif
+
+#if 0
+/*
+ * Reference only — DS18B20 smoke test via DS2482-800 @ I2C 0x18, ch0.
+ * Swap this in locally when flashing sensor-only; do not enable on main.
+ */
+#include <zephyr/kernel.h>
+#include <zephyr/logging/log.h>
+
+#include "sensors/ds18b20.h"
+
+LOG_MODULE_REGISTER(main);
+
+static const struct device *w1 = DEVICE_DT_GET(DT_NODELABEL(w1));
+
+int main(void)
+{
+	struct ds18b20_sample sample;
+
+	LOG_INF("DS18B20 smoke test starting (DS2482-800 @ 0x18 ch0)");
+
+	if (!device_is_ready(w1)) {
+		LOG_ERR("W1 bus not ready (DS2482 init failed?)");
+		return -1;
+	}
+
+	while (1) {
+		int err = ds18b20_read(w1, DS18B20_RES_12BIT, &sample);
+
+		if (err == 0) {
+			int t = sample.temp_c_x100;
+			unsigned t_frac = (unsigned)((t < 0) ? -t : t) % 100;
+
+			LOG_INF("T=%d.%02u C", t / 100, t_frac);
+		} else {
+			LOG_ERR("ds18b20_read failed: %d", err);
+		}
+
+		k_msleep(2000);
+	}
+
+	return 0;
+}
+#endif
