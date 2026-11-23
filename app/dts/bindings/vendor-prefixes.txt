@@ -1,0 +1,2 @@
+# Vendor prefixes used by this app's own bindings (merged with Zephyr's list)
+littelfuse	Littelfuse, Inc.

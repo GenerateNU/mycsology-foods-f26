@@ -15,7 +15,8 @@ static struct gpio_callback ui_button_cb_data;
 static const struct gpio_dt_spec limit_switch = GPIO_DT_SPEC_GET(DT_ALIAS(limit_sw), gpios);
 static struct gpio_callback limit_switch_cb_data;
 
-static const struct gpio_dt_spec ext_led = GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
+static const struct gpio_dt_spec ext_led;
+//= GPIO_DT_SPEC_GET(DT_ALIAS(led2), gpios);
 static bool led_state = false;
 
 /*
@@ -35,7 +36,7 @@ static void debounce_handler(struct k_work *work) {
 
     if (gpio_pin_get_dt(btn->spec) == 1) { // logical level: 1 = pressed (active low handled by devicetree)
         atomic_set_bit(&mcu.button_events, btn->event);
-        gpio_pin_set_dt(&ext_led, (led_state) ? 1 : 0); // test led, toggles once per real press
+        // gpio_pin_set_dt(&ext_led, (led_state) ? 1 : 0); // test led, toggles once per real press
         led_state = !led_state;
         LOG_DBG("button %d pressed", btn->event);
     }
@@ -85,7 +86,7 @@ bool button_pressed(enum button_event btn) {
  * @return int 
  */
 int init_led() {
-    return gpio_pin_configure_dt(&ext_led, GPIO_OUTPUT_INACTIVE);
+    return 0; //gpio_pin_configure_dt(&ext_led, GPIO_OUTPUT_INACTIVE);
 }
 
 /**

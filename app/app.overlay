@@ -59,7 +59,7 @@
         b0 = &button_0;
         // b1 = &button_1;
         // b2 = &button_2;
-        led2 = &ext_led;
+        // led2 = &ext_led;
         fan-pwm = &fan_pwm;
         heater-pwm = &heater_pwm;
         stepper = &stepper;
@@ -68,11 +68,60 @@
     };
 };
 
+&adc1 {
+	pinctrl-0 = <&adc1_in4_pa4>;        /* CHANGE: your pin (PA4 = ADC1_IN4) */
+	pinctrl-names = "default";
+	st,adc-clock-source = "SYNC";
+	st,adc-prescaler = <4>;
+	vref-mv = <3300>;                   /* CHANGE: your real VDDA voltage */
+	status = "okay";
+
+	#address-cells = <1>;
+	#size-cells = <0>;
+
+	channel@4 {                         /* CHANGE: channel number for your pin */
+		reg = <4>;
+		zephyr,gain = "ADC_GAIN_1";
+		zephyr,reference = "ADC_REF_INTERNAL";
+		zephyr,acquisition-time = <ADC_ACQ_TIME(ADC_ACQ_TIME_TICKS, 480)>;
+		zephyr,resolution = <12>;
+	};
+};
+
+/* 2. The sensor itself */
+/ {
+	hall: rotary_sensor {
+		compatible = "littelfuse,55300";
+		io-channels = <&adc1 4>;          /* CHANGE: must match channel@N above */
+
+		/* Sensor's own output range (NOT the divided voltage) */
+		output-min-mv = <500>;            /* output at 0 deg   */
+		output-max-mv = <4500>;           /* output at 360 deg */
+
+		/* Your voltage divider */
+		full-ohms = <30000>;              /* CHANGE: top + bottom resistor */
+		output-ohms = <20000>;            /* CHANGE: bottom resistor (pin to GND) */
+
+		/* Magnet detection */
+		band-margin-mv = <250>;
+		jitter-threshold-mdeg = <20000>;
+		debounce = <3>;
+
+		/* Smoothing */
+		samples = <8>;
+		filter-shift = <2>;
+
+		status = "okay";
+	};
+};
+
+/*
 &{/leds} {
     ext_led: led_2 {
         gpios = <&gpioa 4 GPIO_ACTIVE_HIGH>; // PA4 (Feather A0)
     };
 };
+*/
 
 &timers8 {
     /* TIM8 runs from the 168 MHz APB2 timer clock: 168 MHz / (99+1) = 1.68 MHz tick.
