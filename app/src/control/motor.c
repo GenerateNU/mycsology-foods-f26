@@ -9,6 +9,10 @@ LOG_MODULE_REGISTER(motor);
 #define STEPS_PER_REV 200
 #define DEGS_PER_STEP 1.8
 
+#define BELT_PITCH_MM 2.0f
+#define PULLEY_TEETH 24.0f
+#define MM_TO_DEG_RATIO 360.0f / (PULLEY_TEETH * BELT_PITCH_MM)
+
 extern mcu_t mcu;
 
 static const struct device *rake_dev = DEVICE_DT_GET(DT_ALIAS(stepper));
@@ -49,8 +53,8 @@ int stepper_move_deg(const struct device *dev, int32_t deg) {
     return ret;
 }
 
-int mover_stepper_move_deg(int32_t deg) {
-    return stepper_move_deg(move_dev, deg);
+int mover_stepper_move_mm(int32_t mm) {
+    return stepper_move_deg(move_dev, MM_TO_DEG_RATIO * mm);
 }
 
 int rake_stepper_move_deg(int32_t deg) {
@@ -88,8 +92,10 @@ int go_home_rake() {
     }
 }
 
+#define H_SUBSTRATE_MM 21.821f
+
 inline int32_t lower_angle() {
-    return -1; // Shrey will give a formula
+    return asinf(1.0f-((H_SUBSTRATE_MM-21.821f)/76.12928f)); // Shrey formula
 };
 
 int rake_motion() {
@@ -97,31 +103,32 @@ int rake_motion() {
     go_home_mover();
     k_msleep(1000);
     go_home_rake();
+    k_msleep(1000);
 
     // rake 180
     rake_stepper_move_deg(-180); // ccw
     k_sleep(K_MSEC(1000));
 
     // move carrige to back (exact number to come)
-    mover_stepper_move_deg(-1);
+    mover_stepper_move_mm(-10);
 
     // put in (ccw)
     rake_stepper_move_deg(lower_angle());
     k_sleep(K_MSEC(1000));
 
     // do first sweep (full track)
-    mover_stepper_move_deg(10);
+    mover_stepper_move_mm(344); // 14in -> 355.6mm - 10mm from small move - 2mm to be safe
     k_sleep(K_MSEC(10000)); //10sec
 
     // move back a little
-    mover_stepper_move_deg(10);
+    mover_stepper_move_mm(10);
 
     // flip long way around (cw)
     rake_stepper_move_deg(-2 * lower_angle());
     k_sleep(K_MSEC(2000));
 
     // sweep back (full)
-    mover_stepper_move_deg(-10);
+    mover_stepper_move_mm(-344);
     k_sleep(K_MSEC(10000));//10sec
 
     // maybe repeat (?)

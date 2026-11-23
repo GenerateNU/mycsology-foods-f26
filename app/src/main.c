@@ -55,7 +55,7 @@ int main(void) {
     init_heater(&heater);
 
     init_motors();
-    mover_stepper_move_deg(360);
+    mover_stepper_move_mm(10);
     //rake_motion();
 
     go_home_rake();
